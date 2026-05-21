@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Help the Earth! - EFL Sentence Builder</title>
+    <style>
+        :root {
+            --primary: #4CAF50;
+            --primary-dark: #388E3C;
+            --background: #E8F5E9;
+            --card-bg: #ffffff;
+            --text: #2c3e50;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        h1 {
+            color: var(--primary-dark);
+            margin-bottom: 5px;
+            font-size: 2rem;
+            text-align: center;
+        }
+
+        #score-board {
+            font-size: 1.4rem;
+            font-weight: bold;
+            background: var(--primary);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        #game-container {
+            width: 100%;
+            max-width: 768px; /* Optimized for iPad portrait/landscape boundaries */
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .step-indicator {
+            font-size: 1.1rem;
+            color: #7f8c8d;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .image-container {
+            width: 100%;
+            max-height: 250px;
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 3px solid #e0e0e0;
+        }
+
+        .image-container img {
+            max-width: 100%;
+            max-height: 250px;
+            object-fit: contain;
+        }
+
+        .audio-btn {
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.1s;
+        }
+
+        .audio-btn:active {
+            transform: scale(0.95);
+        }
+
+        .drop-zone-container {
+            width: 100%;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+            min-height: 65px;
+            padding: 15px;
+            background: #f9f9f9;
+            border: 2px dashed #bdc3c7;
+            border-radius: 12px;
+            margin-bottom: 25px;
+        }
+
+        .drop-slot {
+            min-width: 70px;
+            height: 45px;
+            border-bottom: 3px solid #bdc3c7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .word-pool {
+            width: 100%;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+            padding: 15px;
+            background: #f1f2f6;
+            border-radius: 12px;
+            min-height: 80px;
+        }
+
+        .word-card {
+            background: white;
+            border: 2px solid #bdc3c7;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            font-weight: 500;
+            cursor: grab;
+            box-shadow: 0 3px 5px rgba(0,0,0,0.05);
+            touch-action: none; /* Prevents iPad scrolling while dragging */
+        }
+
+        .word-card.dragging {
+            opacity: 0.5;
+            background: #e0e0e0;
+        }
+
+        .word-card.correct {
+            background: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+            cursor: default;
+        }
+
+        /* Results Screen */
+        #result-screen {
+            display: none;
+            text-align: center;
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        #result-screen h2 {
+            color: var(--primary-dark);
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .final-score {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #2196F3;
+            margin: 20px 0;
+        }
+
+        .restart-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Help Our Earth! 🌍</h1>
+    <div id="score-board">Score: <span id="score">0</span></div>
+
+    <div id="game-container">
+        <div class="step-indicator" id="step-info">Sentence 1 of 6</div>
+        
+        <div class="image-container">
+            <img id="game-image" src="" alt="Earth Action Plan">
+        </div>
+
+        <button class="audio-btn" id="audio-btn" onclick="speakSentence()">🔊</button>
+
+        <div class="drop-zone-container" id="drop-zone"></div>
+
+        <div class="word-pool" id="word-pool"></div>
+    </div>
+
+    <div id="result-screen" id="result-screen">
+        <h2>Fantastic Job! 🎉</h2>
+        <p>You helped the earth clean up!</p>
+        <div class="final-score" id="final-score">0</div>
+        <button class="restart-btn" onclick="resetGame()">Play Again</button>
+    </div>
+
+    <script>
+        // Game Data Configuration
+        const gameData = [
+            {
+                sentence: "I can help the earth by saving water.",
+                image: "https://ik.imagekit.io/bdafaeksy/Screenshot%202026-05-17%20211457.png?updatedAt=1779025052303"
+            },
+            {
+                sentence: "You can help the earth by planting trees.",
+                image: "https://ik.imagekit.io/bdafaeksy/Screenshot%202026-05-17%20211647.png?updatedAt=1779025014724"
+            },
+            {
+                sentence: "We can help the earth by turning off the light.",
+                image: "https://ik.imagekit.io/bdafaeksy/Screenshot%202026-05-17%20211852.png?updatedAt=1779024990643"
+            },
+            {
+                sentence: "I can help the earth by bringing eco-bag.",
+                image: "https://ik.imagekit.io/bdafaeksy/Screenshot%202026-05-17%20212103.png?updatedAt=1779024963790"
+            },
+            {
+                sentence: "We can help the earth by recycling plastic bottles.",
+                image: "https://ik.imagekit.io/bdafaeksy/Screenshot%202026-05-17%20231052.png?updatedAt=1779030909467"
+            },
+            {
+                sentence: "We can help the earth by riding bikes.",
+                image: "https://ik.imagekit.io/bdafaeksy/Screenshot%202026-05-17%20212157.png?updatedAt=1779024938957"
+            }
+        ];
+
+        let currentStep = 0;
+        let score = 0;
+        let targetWords = [];
+        let placedWords = [];
+
+        // UI Target Hooks
+        const gameContainer = document.getElementById('game-container');
+        const resultScreen = document.getElementById('result-screen');
+        const gameImage = document.getElementById('game-image');
+        const stepInfo = document.getElementById('step-info');
+        const dropZone = document.getElementById('drop-zone');
+        const wordPool = document.getElementById('word-pool');
+        const scoreDisplay = document.getElementById('score');
+
+        // Initialize Game
+        function loadStep() {
+            if (currentStep >= gameData.length) {
+                endGame();
+                return;
+            }
+
+            // Setup step layouts
+            stepInfo.innerText = `Sentence ${currentStep + 1} of ${gameData.length}`;
+            gameImage.src = gameData[currentStep].image;
+
+            // Prepare sentence tracking arrays
+            // Clean up periods or special characters for building exact matches
+            targetWords = gameData[currentStep].sentence.replace('.', '').split(' ');
+            placedWords = new Array(targetWords.length).fill(null);
+
+            dropZone.innerHTML = '';
+            wordPool.innerHTML = '';
+
+            // Generate slots for answers
+            targetWords.forEach((_, index) => {
+                const slot = document.createElement('div');
+                slot.className = 'drop-slot';
+                slot.dataset.index = index;
+                dropZone.appendChild(slot);
+            });
+
+            // Scramble array sequence safely
+            let jumbled = [...targetWords].sort(() => Math.random() - 0.5);
+
+            // Generate interactive word elements
+            jumbled.forEach((word, i) => {
+                const card = document.createElement('div');
+                card.className = 'word-card';
+                card.innerText = word;
+                card.id = `word-${i}`;
+                card.setAttribute('draggable', 'true');
+                
+                // standard desktop drag/drop
+                card.addEventListener('dragstart', dragStart);
+                card.addEventListener('dragend', dragEnd);
+
+                // iOS/iPad Safari specific touch overrides
+                card.addEventListener('touchstart', handleTouchStart, {passive: false});
+                card.addEventListener('touchmove', handleTouchMove, {passive: false});
+                card.addEventListener('touchend', handleTouchEnd, {passive: false});
+
+                wordPool.appendChild(card);
+            });
+
+            setupDropZoneListeners();
+        }
+
+        // Native Browser Text-To-Speech configuration
+        function speakSentence() {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel(); // kill existing feeds
+                const utterance = new SpeechSynthesisUtterance(gameData[currentStep].sentence);
+                utterance.lang = 'en-US';
+                utterance.rate = 0.85; // slightly slower for EFL learners
+                window.speechSynthesis.speak(utterance);
+            } else {
+                alert("Audio feature is not supported on this device browser version.");
+            }
+        }
+
+        // Standard Drag Logic Functions
+        let draggedItem = null;
+
+        function dragStart(e) {
+            draggedItem = this;
+            setTimeout(() => this.classList.add('dragging'), 0);
+        }
+
+        function dragEnd() {
+            this.classList.remove('dragging');
+            draggedItem = null;
+        }
+
+        function setupDropZoneListeners() {
+            const slots = document.querySelectorAll('.drop-slot');
+            slots.forEach(slot => {
+                slot.addEventListener('dragover', e => e.preventDefault());
+                slot.addEventListener('drop', function(e) {
+                    e.preventDefault();
+                    handlePlacement(draggedItem, this);
+                });
+            });
+        }
+
+        // Core validation game logic
+        function handlePlacement(item, slot) {
+            if (!item || slot.children.length > 0) return;
+
+            const targetIdx = parseInt(slot.dataset.index);
+            const placedWord = item.innerText;
+
+            // Validate match state
+            if (targetWords[targetIdx] === placedWord) {
+                slot.appendChild(item);
+                item.classList.add('correct');
+                item.setAttribute('draggable', 'false');
+                
+                // Add Score Points
+                score += 10;
+                scoreDisplay.innerText = score;
+
+                placedWords[targetIdx] = placedWord;
+                checkSentenceComplete();
+            } else {
+                // Shake or feedback dynamic could belong here
+                item.style.borderColor = "#e74c3c";
+                setTimeout(() => item.style.borderColor = "#bdc3c7", 800);
+            }
+        }
+
+        function checkSentenceComplete() {
+            // Check if all spots match target
+            const completed = placedWords.every((w, idx) => w === targetWords[idx]);
+            if (completed) {
+                score += 50; // Sentence completion bonus
+                scoreDisplay.innerText = score;
+                
+                setTimeout(() => {
+                    currentStep++;
+                    loadStep();
+                }, 1200);
+            }
+        }
+
+        // iPad / iPhone Screen Specific Touch Drag/Drop Processing Engine
+        let activeTouchElement = null;
+
+        function handleTouchStart(e) {
+            if (this.classList.contains('correct')) return;
+            activeTouchElement = this;
+            this.classList.add('dragging');
+        }
+
+        function handleTouchMove(e) {
+            if (!activeTouchElement) return;
+            e.preventDefault(); // Lock viewport scrolling actions
+            
+            const touch = e.touches[0];
+            // Render translation values dynamically following finger coords
+            activeTouchElement.style.position = 'fixed';
+            activeTouchElement.style.left = `${touch.clientX - (activeTouchElement.offsetWidth / 2)}px`;
+            activeTouchElement.style.top = `${touch.clientY - (activeTouchElement.offsetHeight / 2)}px`;
+            activeTouchElement.style.zIndex = '1000';
+        }
+
+        function handleTouchEnd(e) {
+            if (!activeTouchElement) return;
+            activeTouchElement.classList.remove('dragging');
+
+            const touch = e.changedTouches[0];
+            // Element target discovery by viewport vector mapping
+            activeTouchElement.style.display = 'none';
+            const dropTarget = document.elementFromPoint(touch.clientX, touch.clientY);
+            activeTouchElement.style.display = 'block';
+
+            // Reset touch position formatting variables
+            activeTouchElement.style.position = '';
+            activeTouchElement.style.left = '';
+            activeTouchElement.style.top = '';
+            activeTouchElement.style.zIndex = '';
+
+            const slot = dropTarget ? dropTarget.closest('.drop-slot') : null;
+
+            if (slot) {
+                handlePlacement(activeTouchElement, slot);
+            }
+            activeTouchElement = null;
+        }
+
+        function endGame() {
+            gameContainer.style.display = 'none';
+            resultScreen.style.display = 'block';
+            document.getElementById('final-score').innerText = `Total Score: ${score} Points`;
+        }
+
+        function resetGame() {
+            currentStep = 0;
+            score = 0;
+            scoreDisplay.innerText = score;
+            gameContainer.style.display = 'flex';
+            resultScreen.style.display = 'none';
+            loadStep();
+        }
+
+        // Turn on startup engine sequence
+        loadStep();
+    </script>
+</body>
+</html>
